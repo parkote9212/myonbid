@@ -10,6 +10,8 @@ import com.pgc.myonbid.domain.item.Item;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,6 +83,29 @@ public class OnbidCltrListResponse {
         @JacksonXmlProperty(localName = "DPSL_MTD_NM")
         private String dpslMtdNm;   // 처분방식 (매각/임대)
 
+        @JacksonXmlProperty(localName = "PBCT_BEGN_DTM")
+        private String pbctBegnDtm; // 입찰시작일시 (문자열로 옴)
+
+        @JacksonXmlProperty(localName = "PBCT_CLS_DTM")
+        private String pbctClsDtm;  // 입찰마감일시
+
+        @JacksonXmlProperty(localName = "CLTR_HSTR_NO")
+        private String cltrHstrNo;
+
+        // [추가] 지도 및 상세 정보
+        @JacksonXmlProperty(localName = "LDNM_PNU")
+        private String ldnmPnu;
+
+        @JacksonXmlProperty(localName = "GOODS_NM")
+        private String goodsNm;
+
+        // [추가] 입찰 방식 및 인기도
+        @JacksonXmlProperty(localName = "BID_MTD_NM")
+        private String bidMtdNm;
+
+        @JacksonXmlProperty(localName = "IQRY_CNT")
+        private Integer iqryCnt;
+
         // --- [Entity 변환 메서드] ---
 
         // DTO -> Item Entity 변환
@@ -91,19 +116,35 @@ public class OnbidCltrListResponse {
                     .ctgrFullNm(this.ctgrFullNm)
                     .ldnmAdrs(this.ldnmAdrs)
                     .apslAsesAvgAmt(this.apslAsesAvgAmt)
+                    .ldnmPnu(this.ldnmPnu)
+                    .goodsNm(this.goodsNm)
                     .build();
         }
 
         // DTO -> AuctionHistory Entity 변환 (부모 엔티티 필요)
         public AuctionHistory toHistoryEntity(Item item, Announcement announcement) {
-            // "(80%)" 문자열에서 숫자만 추출
             BigDecimal feeRate = null;
             if (this.feeRateStr != null) {
                 String rate = this.feeRateStr.replaceAll("[^0-9.]", "");
-                if (!rate.isEmpty()) {
-                    feeRate = new BigDecimal(rate);
-                }
+                if (!rate.isEmpty()) feeRate = new BigDecimal(rate);
             }
+
+            // ▼▼▼ [추가] 날짜 파싱 로직 (yyyyMMddHHmmss -> LocalDateTime) ▼▼▼
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDateTime begnDtm = null;
+            LocalDateTime clsDtm = null;
+
+            try {
+                if (this.pbctBegnDtm != null && !this.pbctBegnDtm.isEmpty()) {
+                    begnDtm = LocalDateTime.parse(this.pbctBegnDtm, formatter);
+                }
+                if (this.pbctClsDtm != null && !this.pbctClsDtm.isEmpty()) {
+                    clsDtm = LocalDateTime.parse(this.pbctClsDtm, formatter);
+                }
+            } catch (Exception e) {
+                // 날짜 형식이 이상하면 일단 null로 둠 (배치 중단 방지)
+            }
+            // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
             return AuctionHistory.builder()
                     .item(item)
@@ -111,9 +152,14 @@ public class OnbidCltrListResponse {
                     .pbctNo(this.pbctNo)
                     .minBidPrc(this.minBidPrc)
                     .feeRate(feeRate)
+                    .pbctBegnDtm(begnDtm) // 추가
+                    .pbctClsDtm(clsDtm)   // 추가
                     .pbctCltrStatNm(this.pbctCltrStatNm)
                     .uscbdCnt(this.uscbdCnt)
-                    // *일정 정보(날짜)는 여기서 안 들어오고, 별도 API에서 채웁니다*
+                    .pbctCdtnNo(this.pbctCdtnNo) // 추가
+                    .cltrHstrNo(this.cltrHstrNo) // 추가
+                    .bidMtdNm(this.bidMtdNm)
+                    .iqryCnt(this.iqryCnt)
                     .build();
         }
     }

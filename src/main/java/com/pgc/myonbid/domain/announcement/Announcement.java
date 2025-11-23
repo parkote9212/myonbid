@@ -34,9 +34,8 @@ public class Announcement extends BaseTimeEntity {
     @Column(name = "RSBY_DEPT", length = 100)
     private String rsbyDept; // 담당부서
 
-    @Lob
-    @Column(name = "PLNM_DOC")
-    private String plnmDoc; //공고 상세
+    @Column(name = "PLNM_DOC", columnDefinition = "LONGTEXT")
+    private String plnmDoc;//공고 상세
 
     @Builder
     public Announcement(String plnmNo, String plnmNm, String orgNm, String rsbyDept, String plnmDoc) {

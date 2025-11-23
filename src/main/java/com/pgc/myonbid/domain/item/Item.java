@@ -35,12 +35,22 @@ public class Item extends BaseTimeEntity {
     @Column(name = "APSL_ASES_AVG_AMT")
     private Long apslAsesAvgAmt; // 감정가
 
+    @Column(name = "LDNM_PNU", length = 50)
+    private String ldnmPnu;
+
+    @Column(name = "GOODS_NM", length = 2000)
+    private String goodsNm;
+
+
+
     @Builder
-    public Item(String cltrNo, String cltrNm, String ctgrFullNm, String ldnmAdrs, Long apslAsesAvgAmt) {
+    public Item(String cltrNo, String cltrNm, String ctgrFullNm, String ldnmAdrs, Long apslAsesAvgAmt, String ldnmPnu, String goodsNm) {
         this.cltrNo = cltrNo;
         this.cltrNm = cltrNm;
         this.ctgrFullNm = ctgrFullNm;
         this.ldnmAdrs = ldnmAdrs;
         this.apslAsesAvgAmt = apslAsesAvgAmt;
+        this.ldnmPnu = ldnmPnu;
+        this.goodsNm = goodsNm;
     }
 }
