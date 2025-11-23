@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: myonbid
+    # DB설정
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: "${DB_URL:jdbc:mariadb://localhost:3306/myonbid_db}"
+    username: "${DB_USERNAME:root}"
+    password: "${DB_PASSWORD:1234}"
+
+
+  # 1. JPA 설정 (기존 테이블과 엔티티 매핑)
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 중요: 이미 테이블을 만들었으므로 'create'가 아닌 'validate' 사용 (불일치 시 에러 발생으로 안전 확보)
+    properties:
+      hibernate:
+        format_sql: true  # 로그에 SQL 나올 때 보기 좋게 줄바꿈
+        show_sql: true    # 실행되는 SQL을 콘솔에 출력 (개발 단계 필수)
+
+  # 2. Batch 설정 (메타 테이블 자동 생성)
+  batch:
+    jdbc:
+      initialize-schema: always # 중요: 스프링 배치가 구동되려면 BATCH_JOB_... 같은 메타 테이블이 필요함. 이걸 'always'로 하면 자동 생성해줌.
+    job:
+      enabled: false # 중요: 앱 실행 시 모든 배치가 냅다 돌아가는 것을 방지 (원할 때만 실행)
+
+# 3. MyBatis 설정 (DB 컬럼명 -> 자바 변수명 자동 변환)
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true # 필수: DB의 'CLTR_NO'를 자바의 'cltrNo'로 자동 매핑해줌
+  mapper-locations: classpath:mapper/**/*.xml # 나중에 SQL Mapper 파일 위치
+
+# 4. 로깅 설정 (디버깅용)
+logging:
+  level:
+    com.myproject.onbid: debug # 사용자 패키지 경로 (수정 필요)
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace # 바인딩 변수(? 값) 확인용
+
+# 5. 커스텀 설정 (온비드 API 키 관리)
+onbid:
+  api:
+    service-key: "발급받은_인코딩_서비스키_여기에_입력" # 혹은 환경변수 ${ONBID_API_KEY} 사용 권장
+    base-url: "http://openapi.onbid.co.kr/openapi/services"
