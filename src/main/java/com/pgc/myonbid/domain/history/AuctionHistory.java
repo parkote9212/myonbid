@@ -6,14 +6,12 @@ import com.pgc.myonbid.domain.item.Item;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -25,47 +23,73 @@ public class AuctionHistory extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "HISTORY_ID", nullable = false)
-    private Long id;
+    private Long historyId;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "CLTR_NO", nullable = false)
-    private Item cltrNo;
+    private Item item; //물건정보
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "PLNM_NO", nullable = false)
-    private Announcement plnmNo;
+    private Announcement announcement; //공고정보
 
     @Size(max = 20)
     @NotNull
     @Column(name = "PBCT_NO", nullable = false, length = 20)
-    private String pbctNo;
+    private String pbctNo; // 공매번호
 
     @Column(name = "PBCT_SEQ")
-    private Integer pbctSeq;
+    private Integer pbctSeq; // 회차
 
     @Column(name = "PBCT_DGR")
-    private Integer pbctDgr;
+    private Integer pbctDgr; // 차수
 
     @Column(name = "MIN_BID_PRC")
-    private Long minBidPrc;
+    private Long minBidPrc; //최저입찰가
 
     @Column(name = "FEE_RATE", precision = 5, scale = 2)
-    private BigDecimal feeRate;
+    private BigDecimal feeRate; // 최저 입찰가율
+
+    @Column(name = "TDPS_RT")
+    private Integer tdpsRt; // 보증금률
 
     @Column(name = "PBCT_BEGN_DTM")
-    private Instant pbctBegnDtm;
+    private LocalDateTime pbctBegnDtm; // 입찰시작
 
     @Column(name = "PBCT_CLS_DTM")
-    private Instant pbctClsDtm;
+    private LocalDateTime pbctClsDtm; // 입찰마감
 
-    @Size(max = 50)
+    @Column(name = "PBCT_EXCT_DTM")
+    private LocalDateTime pbctExctDtm; // 개찰일시
+
     @Column(name = "PBCT_CLTR_STAT_NM", length = 50)
-    private String pbctCltrStatNm;
+    private String pbctCltrStatNm; // 상태 (유찰 등)
 
-    @ColumnDefault("current_timestamp()")
-    @Column(name = "REG_DT")
-    private Instant regDt;
+    @Column(name = "USCBD_CNT")
+    private Integer uscbdCnt; // 유찰횟수
+
+    @Builder
+    public AuctionHistory(Item item, Announcement announcement, String pbctNo, Integer pbctSeq, Integer pbctDgr, Long minBidPrc, BigDecimal feeRate, String pbctCltrStatNm, Integer uscbdCnt) {
+        this.item = item;
+        this.announcement = announcement;
+        this.pbctNo = pbctNo;
+        this.pbctSeq = pbctSeq;
+        this.pbctDgr = pbctDgr;
+        this.minBidPrc = minBidPrc;
+        this.feeRate = feeRate;
+        this.pbctCltrStatNm = pbctCltrStatNm;
+        this.uscbdCnt = uscbdCnt;
+    }
+
+    public void updateSchedule(LocalDateTime begn, LocalDateTime cls, LocalDateTime exct, Integer tdpsRt) {
+        this.pbctBegnDtm = begn;
+        this.pbctClsDtm = cls;
+        this.pbctExctDtm = exct;
+        this.tdpsRt = tdpsRt;
+    }
+
+
 
 }
