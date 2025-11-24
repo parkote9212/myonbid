@@ -1,6 +1,8 @@
 package com.pgc.myonbid.domain.history;
 
+import com.pgc.myonbid.domain.announcement.Announcement;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,4 +20,9 @@ public interface AuctionHistoryRepository extends JpaRepository<AuctionHistory, 
     // [Service용] 특정 물건(CLTR_NO)의 모든 이력을 회차(SEQ)와 차수(DGR) 순서대로 조회
     // 그래프 그릴 때 이 메소드를 호출하면 됩니다.
     List<AuctionHistory> findAllByItem_CltrNoOrderByPbctSeqAscPbctDgrAsc(String cltrNo);
+
+    @Query("SELECT h FROM AuctionHistory h WHERE h.pbctSeq IS NULL")
+    List<AuctionHistory> findIncompleteHistories(org.springframework.data.domain.Pageable pageable);
+
+    Optional<AuctionHistory> findFirstByAnnouncement(Announcement announcement);
 }

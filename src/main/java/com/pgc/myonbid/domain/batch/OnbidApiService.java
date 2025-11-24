@@ -2,13 +2,15 @@ package com.pgc.myonbid.domain.batch;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.pgc.myonbid.domain.batch.dto.OnbidAnnouncementDetailResponse;
+import com.pgc.myonbid.domain.batch.dto.OnbidBidDateInfoResponse;
 import com.pgc.myonbid.domain.batch.dto.OnbidCltrListResponse;
+import com.pgc.myonbid.domain.batch.dto.OnbidFileInfoResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
@@ -41,7 +43,7 @@ public class OnbidApiService {
                     .bodyToMono(String.class)
                     .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
                             .maxBackoff(Duration.ofSeconds(10))
-                            .doBeforeRetry(retrySignal -> 
+                            .doBeforeRetry(retrySignal ->
                                     log.warn("API 호출 재시도 중... 시도 횟수: {}", retrySignal.totalRetries() + 1)))
                     .block();
 
@@ -62,4 +64,77 @@ public class OnbidApiService {
             return null;
         }
     }
+
+    public OnbidBidDateInfoResponse getBidDateInfo(String plnmNo, String pbctNo) {
+        log.info("Fetching Detail Info - PBCT_NO: {}", pbctNo); // 로그 너무 많으면 debug로
+
+        try {
+            String xmlString = onbidWebClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/KamcoPblsalThingInquireSvc/getKamcoPlnmPbctBidDateInfoDetail")
+                            .queryParam("serviceKey", serviceKey)
+                            .queryParam("PLNM_NO", plnmNo)
+                            .queryParam("PBCT_NO", pbctNo)
+                            .build())
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            if (xmlString == null || xmlString.isEmpty()) return null;
+
+
+            return xmlMapper.readValue(xmlString, OnbidBidDateInfoResponse.class);
+
+        } catch (Exception e) {
+            log.error("Error fetching bid date info (PBCT_NO: {}): {}", pbctNo, e.getMessage());
+            return null;
+        }
+    }
+
+
+    public OnbidAnnouncementDetailResponse getAnnouncementDetail(String plnmNo, String pbctNo) {
+        try {
+            String xmlString = onbidWebClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/KamcoPblsalThingInquireSvc/getKamcoPlnmPbctBasicInfoDetail")
+                            .queryParam("serviceKey", serviceKey)
+                            .queryParam("PLNM_NO", plnmNo)
+                            .queryParam("PBCT_NO", pbctNo) // API 요구사항으로 인해 같이 보냄
+                            .build())
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            if (xmlString == null || xmlString.isEmpty()) return null;
+            return xmlMapper.readValue(xmlString, OnbidAnnouncementDetailResponse.class);
+
+        } catch (Exception e) {
+            log.error("공고 상세 조회 실패 (PLNM_NO: {}): {}", plnmNo, e.getMessage());
+            return null;
+        }
+    }
+
+    public OnbidFileInfoResponse getFileInfo(String plnmNo, String pbctNo) {
+        try {
+            String xmlString = onbidWebClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/KamcoPblsalThingInquireSvc/getKamcoPlnmPbctFileInfoDetail")
+                            .queryParam("serviceKey", serviceKey)
+                            .queryParam("PLNM_NO", plnmNo)
+                            .queryParam("PBCT_NO", pbctNo)
+                            .build())
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            if (xmlString == null || xmlString.isEmpty()) return null;
+            return xmlMapper.readValue(xmlString, OnbidFileInfoResponse.class);
+
+        } catch (Exception e) {
+            log.error("파일 정보 조회 실패 (PBCT_NO: {}): {}", pbctNo, e.getMessage());
+            return null;
+        }
+    }
+
+
 }

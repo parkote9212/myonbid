@@ -35,7 +35,7 @@ public class CltrListJobConfig {
     private final AnnouncementRepository announcementRepository;
     private final AuctionHistoryRepository historyRepository;
 
-    private static final int PAGE_SIZE = 100;
+    private static final int PAGE_SIZE = 1000;
     private static final String PAGE_KEY = "currentPage"; // ExecutionContext에 저장할 키
 
     @Bean
