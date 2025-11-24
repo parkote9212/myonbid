@@ -17,6 +17,8 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Table(name = "tb_auction_history")
 public class AuctionHistory extends BaseTimeEntity {
 
@@ -82,24 +84,7 @@ public class AuctionHistory extends BaseTimeEntity {
     @Column(name = "CLTR_HSTR_NO", length = 20)
     private String cltrHstrNo;
 
-    @Builder
-    public AuctionHistory(Item item, Announcement announcement, String pbctNo, Integer pbctSeq, Integer pbctDgr, Long minBidPrc, BigDecimal feeRate, LocalDateTime pbctBegnDtm, LocalDateTime pbctClsDtm, String pbctCltrStatNm, Integer uscbdCnt, String bidMtdNm, Integer iqryCnt, String pbctCdtnNo, String cltrHstrNo) {
-        this.item = item;
-        this.announcement = announcement;
-        this.pbctNo = pbctNo;
-        this.pbctSeq = pbctSeq;
-        this.pbctDgr = pbctDgr;
-        this.minBidPrc = minBidPrc;
-        this.feeRate = feeRate;
-        this.pbctBegnDtm = pbctBegnDtm;
-        this.pbctClsDtm = pbctClsDtm;
-        this.pbctCltrStatNm = pbctCltrStatNm;
-        this.uscbdCnt = uscbdCnt;
-        this.bidMtdNm = bidMtdNm;
-        this.iqryCnt = iqryCnt;
-        this.pbctCdtnNo = pbctCdtnNo;
-        this.cltrHstrNo = cltrHstrNo;
-    }
+
 
     public void updateSchedule(LocalDateTime begn, LocalDateTime cls, LocalDateTime exct, Integer tdpsRt) {
         this.pbctBegnDtm = begn;
